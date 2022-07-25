@@ -7,9 +7,6 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 
-
-import "forge-std/console.sol";
-
 ///@title Money
 ///@author Jeisson Niño
 ///@notice Technical Test for deviants factions
@@ -26,7 +23,6 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
     ///@param user Caller address
     ///@param arraySize Sent array size
     error WrongArraySize(address user, uint256 arraySize);
-
 
 
     /// ============ Immutable storage ==================
@@ -127,6 +123,7 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
         return bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"));
     }
 
+
     ///@dev Handles the receipt of a multiple ERC1155 token types. This function
     ///is called at the end of a `safeBatchTransferFrom` after the balances have
     ///been updated.
@@ -148,15 +145,18 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
         return bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"));
     }
 
+
     ///@notice Change the URI, only by the owner
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
     }
+
    
    ///@notice Returns the URI for each Id token
     function uri(uint256 id) public view override returns (string memory) {
         return string(abi.encodePacked(super.uri(id), Strings.toString(id), ".json"));
     }
+
 
     ///@notice returns the minimum integer value that can be divided by the denomination
     ///@param amount integer value to be divided
@@ -178,7 +178,7 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
         uint256 minPerDenominationTmp;
         uint256 amountTmp;
         uint256 initAmount = amount;
-        uint256[] memory amountDenominations =  new uint256[](6);
+        uint256[] memory amountDenominations =  new uint256[](6);      
      
         minPerDenominationTmp = minimumPerDenomination(amount, 100);
         if(balanceOf(address(this), 100) >= minPerDenominationTmp){
@@ -238,7 +238,7 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
         uint256[] memory amountPerDenomination
         ) public onlyOwner {        
         
-        if (amountPerDenomination.length != 6){
+        if (amountPerDenomination.length != denominations.length){
             revert WrongArraySize(msg.sender, amountPerDenomination.length);
         }
 
