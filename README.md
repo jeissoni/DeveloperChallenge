@@ -28,7 +28,7 @@ https://rinkeby.etherscan.io/address/0xf00a2aa81dc0b1830ecac080b94c63d8358bf88c#
 
 
 El contrato es desplegado en la red de prueba rinkeby, se usa HardHat para ese el despliegue y la verificación del contrato.
-https://rinkeby.etherscan.io/address/0xf00a2aa81dc0b1830ecac080b94c63d8358bf88
+https://rinkeby.etherscan.io/address/0xf00A2aA81dC0b1830ecAc080B94c63D8358bF88C#code
 
 Adjunto reporte de Gas
 
