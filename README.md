@@ -55,3 +55,12 @@ Dentro del repositorio en la carpeta `frontEnd` se encuentra una interfaz gráfi
 ![alt text](https://raw.githubusercontent.com/jeissoni/DeveloperChallenge/main/frontEnd/img/frond.png)
 
 
+### OpenSea
+
+El contrato se puede ver los token y cantidades en la plataforma OpenSea 
+
+https://testnets.opensea.io/0xf00A2aA81dC0b1830ecAc080B94c63D8358bF88C?tab=created
+
+
+
+
