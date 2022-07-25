@@ -7,7 +7,7 @@ const btnStock = document.getElementById("btnStock")
 const viewOnEtherscan = document.querySelector('.viewOnEtherscan')
 
 
-const contractAdress = "0x5492906B600165A397EE8d581ded79a1cd4E2c87"
+const contractAdress = "0xf00A2aA81dC0b1830ecAc080B94c63D8358bF88C"
 const contractAbi = [{
         "inputs": [{
             "internalType": "uint256[]",
@@ -166,13 +166,27 @@ async function convertDenom() {
     signer = provider.getSigner();
     const contract = new ethers.Contract(contractAdress, contractAbi, signer);
     const amount = document.getElementById("nptDenom").value
+    const alert = document.getElementById('liveAlertDenom')
+    let wrapper = document.createElement('div')
     await contract.convertDenom(amount)
-    .then((tx) => {
-        viewOnEtherscan.style.display = "block"
-        viewOnEtherscan.href = "https://rinkeby.etherscan.io/tx/"
-        viewOnEtherscan.href += tx.hash
+    .then((tx) => {      
+        wrapper.innerHTML = [
+            `<div class="alert alert-success alert-dismissible" role="alert">`,
+            `   <div>https://rinkeby.etherscan.io/tx/${tx.hash}</div>`,
+            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+            '</div>'
+          ].join('')
+        alert.append(wrapper)
     })
-    .catch((x) => console.log(x.error.message))    
+    .catch((x) => {
+        wrapper.innerHTML = [
+            `<div class="alert alert-danger alert-dismissible" role="alert">`,
+            `   <div>${x.error.message}</div>`,
+            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+            '</div>'
+          ].join('')
+        alert.append(wrapper)    
+    })    
 }
 
 
@@ -182,14 +196,27 @@ async function changeStock(){
     const contract = new ethers.Contract(contractAdress, contractAbi, signer);
     const amount = document.getElementById("nptStock").value
     const array = amount.split(",").map(Number);
-    console.log(array)
+    const alert = document.getElementById('liveAlertStock')
+    let wrapper = document.createElement('div')
     await contract.changeStock(array)
-    .then((tx) => {
-        viewOnEtherscan.style.display = "block"
-        viewOnEtherscan.href = "https://rinkeby.etherscan.io/tx/"
-        viewOnEtherscan.href += tx.hash
+    .then((tx) => {       
+        wrapper.innerHTML = [
+            `<div class="alert alert-success alert-dismissible" role="alert">`,
+            `   <div>https://rinkeby.etherscan.io/tx/${tx.hash}</div>`,
+            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+            '</div>'
+          ].join('')
+        alert.append(wrapper)        
     })
-    .catch((x) => console.log(x.error.message))    
+    .catch((x) => {
+    wrapper.innerHTML = [
+        `<div class="alert alert-danger alert-dismissible" role="alert">`,
+        `   <div>${x.error.message}</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        '</div>'
+      ].join('')
+    alert.append(wrapper)    
+    }) 
 
 
 }
@@ -202,8 +229,15 @@ btnConvert.addEventListener('click', async function(){
             changeChain()
         }
       } else {
-        disConnectedToMainet.classList.add("showAlert") 
-        
+        const alert = document.getElementById('liveAlert')
+        let wrapper = document.createElement('div')
+        wrapper.innerHTML = [
+            `<div class="alert alert-warning alert-dismissible" role="alert">`,
+            `   <div>¡ No account connected !</div>`,
+            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+            '</div>'
+          ].join('')
+        alert.append(wrapper)       
       }
 })
 
@@ -215,7 +249,15 @@ btnStock.addEventListener('click', async function(){
             changeChain()
         }
       } else {
-        disConnectedToMainet.classList.add("showAlert") 
+        const alert = document.getElementById('liveAlert')
+        let wrapper = document.createElement('div')
+        wrapper.innerHTML = [
+            `<div class="alert alert-warning alert-dismissible" role="alert">`,
+            `   <div>¡ No account connected !</div>`,
+            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+            '</div>'
+          ].join('')
+        alert.append(wrapper)     
         
       }
 })
