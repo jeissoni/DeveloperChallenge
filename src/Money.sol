@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,36 +10,31 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 
 import "forge-std/console.sol";
 
+///@title Money
+///@author Jeisson Niño
+///@notice Technical Test for deviants factions
 contract Money is ERC1155,IERC1155Receiver, Ownable {
 
+    ///===================================================
+    ///============= Custom errors =======================
+    ///@notice There are not enough funds for the exchange
+    ///@param user Caller address 
+    ///@param amount User NFT balance
     error WithoutSufficientFunds(address user, uint256 amount); 
 
-    /// ============ Immutable storage ============
+    ///@notice Array size is wrong
+    ///@param user Caller address
+    ///@param arraySize Sent array size
+    error WrongArraySize(address user, uint256 arraySize);
+
+
+
+    /// ============ Immutable storage ==================
+    ///@notice List of available denominations
     uint256[] public denominations = new uint256[](6);
-    
-    using Counters for Counters.Counter;
-    Counters.Counter private tokenIdCounter;  
-    
-    /// ============ Events =====================
-    event ChangeStock(address indexed owner,  uint256[] amount);  
-
-    event ConvertDenom(address indexed user, uint[] amount);     
-
-    event OnERC1155Received(
-        address operator,
-        address from,
-        uint256 id,
-        uint256 value,
-        bytes data
-    );
-    event OnERC1155BatchReceived(
-        address operator,
-        address from,
-        uint256[] ids,
-        uint256[] values,
-        bytes data
-    );
-
+      
+    ///@notice in the constructor the data of the denomination 
+    ///and the balances are initialized
     constructor(      
     ) ERC1155("") {       
 
@@ -58,9 +53,67 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
         amount[4]= 5;
         amount[5]= 50;
 
-        _mintBatch(address(this),denominations, amount,"");            
+        _mintBatch(address(this),denominations, amount,""); 
+
+        _setURI("ipfs://QmaLJyHmDqfEaCAPRjEWYuNAoF6kbX2yqa9K41jBV4mXNa/");   
+           
     }
+
+
+    /// ========================================================
+    /// ==================== Events ============================
     
+    /// @notice Emitted after a successful the denominations are changed
+    /// @param owner Address of owner 
+    /// @param amount List of new balances
+    event ChangeStock(address indexed owner,  uint256[] amount); 
+
+
+    /// @notice Emitted after a successful Withdraw Proceeds
+    /// @param user Address of owner 
+    /// @param amount Amount of proceeds claimed by owner
+    event ConvertDenom(address indexed user, uint[] amount);  
+
+   
+    ///@param operator The address which initiated the transfer (i.e. msg.sender)
+    ///@param from The address which previously owned the token
+    ///@param id The ID of the token being transferred
+    ///@param value The amount of tokens being transferred
+    ///@param data Additional data with no specified format    
+    event OnERC1155Received(
+        address operator,
+        address from,
+        uint256 id,
+        uint256 value,
+        bytes data
+    );
+
+    
+    ///@param operator The address which initiated the batch transfer (i.e. msg.sender)
+    ///@param from The address which previously owned the token
+    ///@param ids An array containing ids of each token being transferred (order and length must match values array)
+    ///@param values An array containing amounts of each token being transferred (order and length must match ids array)
+    ///@param data Additional data with no specified format
+    event OnERC1155BatchReceived(
+        address operator,
+        address from,
+        uint256[] ids,
+        uint256[] values,
+        bytes data
+    );
+    
+
+    /// =========================================================
+    /// ============ Functions ==================================  
+
+    ///@dev Handles the receipt of a single ERC1155 token type. This function is
+    ///called at the end of a `safeTransferFrom` after the balance has been updated.
+    ///@param operator The address which initiated the transfer (i.e. msg.sender)
+    ///@param from The address which previously owned the token
+    ///@param id The ID of the token being transferred
+    ///@param value The amount of tokens being transferred
+    ///@param data Additional data with no specified format
+    ///@return `bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))` if transfer is allowed
     function onERC1155Received(
         address operator,
         address from,
@@ -74,6 +127,14 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
         return bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"));
     }
 
+    ///@dev Handles the receipt of a multiple ERC1155 token types. This function
+    ///is called at the end of a `safeBatchTransferFrom` after the balances have
+    ///been updated.
+    ///@param operator The address which initiated the batch transfer (i.e. msg.sender)
+    ///@param from The address which previously owned the token
+    ///@param ids An array containing ids of each token being transferred (order and length must match values array)
+    ///@param values An array containing amounts of each token being transferred (order and length must match ids array)
+    ///@param data Additional data with no specified format
     function onERC1155BatchReceived(
         address operator,
         address from,
@@ -87,19 +148,19 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
         return bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"));
     }
 
-
-    function exists(uint256 tokenId) internal view virtual returns (bool) {
-        return tokenId > tokenIdCounter.current() ? false : true ;
-    }
+    ///@notice Change the URI, only by the owner
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
     }
    
-    function uri(uint256 _id) public view override returns (string memory) {
-        require(exists(_id), "URI: nonexistent token");
-        return string(abi.encodePacked(super.uri(_id), Strings.toString(_id), ".json"));
+   ///@notice Returns the URI for each Id token
+    function uri(uint256 id) public view override returns (string memory) {
+        return string(abi.encodePacked(super.uri(id), Strings.toString(id), ".json"));
     }
 
+    ///@notice returns the minimum integer value that can be divided by the denomination
+    ///@param amount integer value to be divided
+    ///@param denomination value with which you want to divide
     function minimumPerDenomination(
         uint256 amount, 
         uint256 denomination) 
@@ -108,16 +169,10 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
             return (minPerDenomination);
     }
 
-    function tranferAmountNft(
-        address user,
-        uint256[] memory amount)  
-        private {                 
-           _safeBatchTransferFrom(address(this),user,denominations, amount,"");
-    }
 
-
-    //función que convierte un número en una 
-    //lista de NFTs mínimos para entregar.
+    ///@notice from an integer get the minimum value per 
+    ///denomination and return NFT representing each of the denominations
+    ///@param amount integer value for division
     function convertDenom(uint256 amount) public {  
 
         uint256 minPerDenominationTmp;
@@ -171,18 +226,22 @@ contract Money is ERC1155,IERC1155Receiver, Ownable {
             revert WithoutSufficientFunds(msg.sender, initAmount);
         }
 
-        tranferAmountNft(msg.sender, amountDenominations); 
-
+        _safeBatchTransferFrom(address(this),msg.sender,denominations, amountDenominations,"");
+        
         emit ConvertDenom(msg.sender, amountDenominations);
         
     }
 
-    //actualiza el stock disponible de cada denominación.
-    //Solo debe ser accionable desde la cuenta admin.
+    ///@notice change balances by denomination only by the owner
+    ///@param amountPerDenomination arrangement with new balances
     function changeStock(
         uint256[] memory amountPerDenomination
         ) public onlyOwner {        
         
+        if (amountPerDenomination.length != 6){
+            revert WrongArraySize(msg.sender, amountPerDenomination.length);
+        }
+
         _mintBatch(address(this),denominations, amountPerDenomination,"");       
 
         emit ChangeStock(msg.sender, amountPerDenomination);
