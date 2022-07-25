@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.4;
 
 import "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
@@ -58,7 +58,7 @@ contract MoneyTest is Test {
         assertEq(testMoney.balanceOf(address(testMoney), denomination[5]) , value[5]);
     }
 
-    function testConvertDenom_65() public {
+    function testConvertDenom() public {
         uint256[] memory denomination;
         uint256[] memory value;
 
@@ -120,9 +120,7 @@ contract MoneyTest is Test {
         assertEq(testMoney.balanceOf(address(testMoney), denomination[2]) , value[2] - 2);  //20          
         assertEq(testMoney.balanceOf(address(testMoney), denomination[3]) , value[3]);      //10
         assertEq(testMoney.balanceOf(address(testMoney), denomination[4]) , value[4]);      //5
-        assertEq(testMoney.balanceOf(address(testMoney), denomination[5]) , value[5] - 1);  //1        
-
-
+        assertEq(testMoney.balanceOf(address(testMoney), denomination[5]) , value[5] - 1);  //1  
     }
 
       
@@ -152,6 +150,22 @@ contract MoneyTest is Test {
         testMoney.changeStock(newAmount);
     }
 
+    function testRevertButWrongArraySize() public {
+        uint256[] memory newAmount =  new uint256[](5);
+        newAmount[0] = 10;
+        newAmount[1] = 6;
+        newAmount[2] = 8;
+        newAmount[3] = 15;
+        newAmount[4] = 20;
+      
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Money.WrongArraySize.selector, owner, newAmount.length
+        ));        
+        vm.prank(owner);
+        testMoney.changeStock(newAmount);
+    }
+
     function testChangeStock() public {
         (uint256[] memory denomination, uint256[] memory value) = denominationAndInitialValue();
 
@@ -171,5 +185,15 @@ contract MoneyTest is Test {
         assertEq(testMoney.balanceOf(address(testMoney), denomination[3]) , value[3] + newAmount[3]);
         assertEq(testMoney.balanceOf(address(testMoney), denomination[4]) , value[4] + newAmount[4]);
         assertEq(testMoney.balanceOf(address(testMoney), denomination[5]) , value[5] + newAmount[5]);
+    }
+
+    function testSetURI () public{
+        string memory uri = "https://deviantsfactions.com/";
+        vm.prank(owner);
+        testMoney.setURI(uri);
+
+        string memory uriReturn = testMoney.uri(0);
+        assertEq(uriReturn, string(abi.encodePacked(uri, Strings.toString(0), ".json")));        
+
     }
 }
